@@ -12,6 +12,7 @@ class AgentGreedyImproved(AgentGreedy):
 
 
     def heuristic(self, env: TaxiEnv, taxi_id: int):
+
         I1 = manhattan_distance(env.taxis[taxi_id].position,env.gas_stations[0].position)
         I2 = manhattan_distance(env.taxis[taxi_id].position,env.gas_stations[1].position)
         I = (I1< env.taxis[taxi_id].fuel) or (I2<env.taxis[taxi_id].fuel)
@@ -28,10 +29,11 @@ class AgentGreedyImproved(AgentGreedy):
         B = -min(I1,I2)*(1-I)
         if K:
             C = manhattan_distance(env.taxis[taxi_id].position, env.taxis[taxi_id].passenger.destination)
-            C = (16-C) * I
+            C = (8-C) * I
         else: C = 0
-
-        return ((A+B+C)/16)
+        H = ((A+B+C)/16)
+        print("A={} B={} C={} I={} K={} H={}".format(A,B,C,I,K,H))
+        return H
 
 
 class AgentMinimax(Agent):
