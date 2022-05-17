@@ -8,32 +8,6 @@ import random
 dt_epsilon = 0.05
 max_utility = 10000
 
-
-def chosen_heuristic_old(env: TaxiEnv, taxi_id: int):
-    taxi = env.taxis[taxi_id]
-    I1 = md(taxi.position, env.gas_stations[0].position)
-    I2 = md(taxi.position, env.gas_stations[1].position)
-    I = (I1 < taxi.fuel) or (I2 < taxi.fuel)
-    K = taxi.passenger is not None
-    if not K:
-        A = -math.inf
-        for passenger in env.passengers:
-            dist_to_passenger = md(taxi.position, passenger.position)
-            A_temp = md(passenger.position, passenger.destination)
-            A_temp = A_temp - dist_to_passenger
-            A = max(A, A_temp) * I
-    else:
-        A = 0
-    B = -min(I1, I2) * (1 - I)
-    if K:
-        C = md(taxi.position, taxi.passenger.destination) * I
-        C = (16 - C) * I
-    else:
-        C = 0
-    H = ((A + B + C) / 16)
-    return H
-
-
 def chosen_utility(env: TaxiEnv, taxi_id: int):
     assert env.done()
     taxi = env.get_taxi(taxi_id)
@@ -46,9 +20,6 @@ def chosen_heuristic(env: TaxiEnv, taxi_id: int):
     taxi = env.taxis[taxi_id]
     other_taxi = env.taxis[1 - taxi_id]
 
-    I1 = md(taxi.position, env.gas_stations[0].position)
-    I2 = md(taxi.position, env.gas_stations[1].position)
-    I = (I1 < taxi.fuel) or (I2 < taxi.fuel)
     K = taxi.passenger is not None
     D = taxi.cash - other_taxi.cash
 
@@ -59,21 +30,23 @@ def chosen_heuristic(env: TaxiEnv, taxi_id: int):
         dist_to_passenger = md(taxi.position, passenger.position)
         dist_passenger_to_dest = md(passenger.position, passenger.destination)
         A_temp = dist_passenger_to_dest - dist_to_passenger
-        if A_temp >= A:
+        if A_temp >= A and taxi.fuel >= (dist_to_passenger + dist_passenger_to_dest):
             A = A_temp
             p = passenger.position
 
-    B = -min(I1, I2) * (1 - I)
-
     # C is the distance from taxi to its destination
-    reward = 0
+    B = 0
+    C = math.inf
     if K:
-        reward = md(taxi.passenger.position, taxi.passenger.destination)
+        B = md(taxi.passenger.position, taxi.passenger.destination)
         C = md(taxi.position, taxi.passenger.destination)
-    else:
+    elif p:
         C = md(taxi.position, p)
+    else:
+        for gas_station in env.gas_stations:
+            C = min(C, md(taxi.position, gas_station.position))
 
-    H = (reward - C + D)
+    H = (B - C + D)
     return H
 
 
@@ -175,6 +148,9 @@ class AgentMinimax(Agent):
             self.initial_depth = depth
             minmax_val = max(minmax_val, negamax(self, env, agent_id, depth))
             depth = depth + 1
+        # Patch for handling only root game tree
+        if not isinstance(minmax_val,_MiniMaxNode):
+            minmax_val=_MiniMaxNode(0,env.get_legal_operators(agent_id)[0])
         return minmax_val.op
 
     def heuristic(self, env: TaxiEnv, taxi_id: int):
@@ -199,6 +175,9 @@ class AgentAlphaBeta(Agent):
             self.initial_depth = depth
             minmax_val = max(minmax_val, negamax(self, env, agent_id, depth, True))
             depth = depth + 1
+        # Patch for handling only root game tree
+        if not isinstance(minmax_val,_MiniMaxNode):
+            minmax_val=_MiniMaxNode(0,env.get_legal_operators(agent_id)[0])
         return minmax_val.op
 
     def heuristic(self, env: TaxiEnv, taxi_id: int):
@@ -217,13 +196,12 @@ class AgentExpectimax(Agent):
         self.min_depth_remaining = min(self.min_depth_remaining, depth)
 
         # If evaluated env is done, return utility
-        minimax_mod = 1 if agent_id == self.turn_id else -1
         if env.done():
-            return chosen_utility(env, agent_id) * minimax_mod
+            return chosen_utility(env, agent_id)
 
         # If reached min depth or time finished - return heuristic
         if depth == 0 or self.remaining_time() <= 0:
-            return self.heuristic(env, agent_id) * minimax_mod
+            return self.heuristic(env, agent_id)
 
         # Fetch legal operators in current state
         operators = env.get_legal_operators(agent_id)
@@ -241,15 +219,16 @@ class AgentExpectimax(Agent):
             child.apply_operator(agent_id, op)
             # cal childs expectiMax value
             current_val = self._expectiMax(child, 1 - agent_id, depth - 1)
-            # If vale is better, update minimax value and chosen op
+            # If value is better, update minimax value and chosen op
             if current_val > minmax_val:
                 minmax_val = current_val
                 chosen_op = op
             # Calculate contribution of operation to expectation value
-            expectation += (self._getWeight(op) / len(weights)) * current_val
+            expectation += (self._getWeight(op) / sum(weights)) * current_val
+
         # Chose minmax val to have the chosen operation of it is the root
         minmax_val = _MiniMaxNode(minmax_val, chosen_op) if depth == self.initial_depth else minmax_val
-        # return minmax val if it is a minmax node, otherwise an expecti max
+        # return minmax val if it is a minmax node, otherwise an expectimax
         return minmax_val if agent_id == self.turn_id else expectation
 
     def remaining_time(self):
@@ -269,6 +248,9 @@ class AgentExpectimax(Agent):
             self.initial_depth = depth
             minmax_val = max(minmax_val, self._expectiMax(env, agent_id, depth))
             depth = depth + 1
+        # Patch for handling only root game tree
+        if not isinstance(minmax_val,_MiniMaxNode):
+            minmax_val=_MiniMaxNode(0,env.get_legal_operators(agent_id)[0])
         return minmax_val.op
 
     def heuristic(self, env: TaxiEnv, taxi_id: int):
