@@ -62,7 +62,25 @@ def get_policy(mdp, U):
     #
 
     # ====== YOUR CODE: ======
-    raise NotImplementedError
+    actions_mapping = ['UP', 'DOWN', 'RIGHT', 'LEFT']
+    Policy= deepcopy(U)
+    for i in range(len(mdp.board)):
+        for j in range(len(mdp.board[i])):
+            max_action ='UP'
+            max_sum = 0
+            if (i, j) not in mdp.terminal_states:
+                for action_wanted in mdp.actions.keys():
+                    prob_sum = 0
+                    for i_action, action_prob in enumerate(mdp.transition_function[action_wanted]):
+                        new_state = mdp.step((i, j), actions_mapping[i_action])
+                        prob_sum += action_prob * U[new_state[0]][new_state[1]]
+                    if prob_sum>max_sum:
+                        max_sum = prob_sum
+                        max_action = action_wanted
+
+
+            Policy[i][j] = max_action
+    return Policy
     # ========================
 
 
