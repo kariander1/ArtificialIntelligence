@@ -130,7 +130,7 @@ def policy_iteration(mdp, policy_init):
     unchanged = False
     policy = deepcopy(policy_init)
     while not unchanged:
-        U = policy_evaluation(mdp, policy_init)
+        U = policy_evaluation(mdp, policy)
         unchanged = True
         for i in range(len(mdp.board)):
             for j in range(len(mdp.board[i])):
