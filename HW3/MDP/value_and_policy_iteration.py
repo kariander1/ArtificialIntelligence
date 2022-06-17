@@ -22,15 +22,19 @@ def _evaluate_state_iteration_(mdp, U, S):
     Reward = is_float(mdp.board[S[0]][S[1]])  # Reward for each cell R(s)
     if Reward is None:
         return None, None, None
-    max_action = actions_mapping[0]
+    max_actions = []
     max_sum = 0
     if S not in mdp.terminal_states:
         for action_wanted in mdp.actions.keys():
             prob_sum = _calc_prob_sum_(mdp, U, action_wanted, S)
             if prob_sum > max_sum:
                 max_sum = prob_sum
-                max_action = action_wanted
-    return max_sum, max_action, Reward
+                max_actions = [action_wanted]
+            elif prob_sum == max_sum:
+                max_actions += [action_wanted]
+    if len(max_actions) ==0:
+        max_actions = [actions_mapping[0]]
+    return max_sum, max_actions, Reward
 
 def _value_interation_policy(mdp, U):
 
@@ -43,7 +47,7 @@ def _value_interation_policy(mdp, U):
             max_sum , max_action, Reward = _evaluate_state_iteration_(mdp, U, S)
             if max_sum is None:
                 continue
-            policy[i][j] = max_action
+            policy[i][j] = max_action[0]
             U_temp[i][j] = Reward + mdp.gamma * max_sum
             delta = max(delta, abs(U_temp[i][j] - U[i][j]))
     return U_temp, delta, policy
@@ -141,7 +145,7 @@ def policy_iteration(mdp, policy_init):
                 action_wanted = policy[i][j]
                 current_sum = _calc_prob_sum_(mdp, U, action_wanted, S)
                 if max_sum > current_sum:
-                    policy[i][j] = max_action
+                    policy[i][j] = max_action[0]
                     unchanged =False
     return policy
     # ========================
