@@ -2,7 +2,7 @@ import argparse
 import os
 from mdp import MDP
 from value_and_policy_iteration import value_iteration, get_policy, policy_evaluation, policy_iteration
-
+#from value_and_policy_iteration_nior import value_iteration, get_policy, policy_evaluation, policy_iteration
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
@@ -52,7 +52,7 @@ def example_driver():
     mdp = MDP(board=board_env,
               terminal_states=terminal_states_env,
               transition_function=transition_function_env,
-              gamma=0.9)
+              gamma=1)
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
     print("@@@@@@ The board and rewards @@@@@@")
@@ -76,8 +76,9 @@ def example_driver():
     policy = get_policy(mdp, U_new)
     mdp.print_policy(policy)
     from bonus import get_all_policies,print_policies
-    policies = get_all_policies(mdp,U_new)
-    print_policies(mdp,policies)
+    n_policies = get_all_policies(mdp,U_new)
+    print("Num of policies:",n_policies)
+
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
     print("@@@@@@@@@ Policy iteration @@@@@@@@")
