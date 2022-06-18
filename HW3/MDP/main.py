@@ -75,6 +75,9 @@ def example_driver():
     print("\nFinal policy:")
     policy = get_policy(mdp, U_new)
     mdp.print_policy(policy)
+    from bonus import get_all_policies,print_policies
+    policies = get_all_policies(mdp,U_new)
+    print_policies(mdp,policies)
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
     print("@@@@@@@@@ Policy iteration @@@@@@@@")
