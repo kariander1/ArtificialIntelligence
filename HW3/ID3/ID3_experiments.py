@@ -130,7 +130,11 @@ def best_m_test(x_train, y_train, x_test, y_test, min_for_pruning):
     acc = None
 
     # ====== YOUR CODE: ======
-    raise NotImplementedError
+    tree = ID3(np.unique(y_train), min_for_pruning)
+    tree.fit(x_train, y_train)
+    pred = tree.predict(x_test)
+    acc = accuracy(y_test, pred)
+
     # ========================
 
     return acc
@@ -156,7 +160,8 @@ if __name__ == '__main__':
            modify the value from False to True to plot the experiment result
     """
     plot_graphs = True
-    best_m = cross_validation_experiment(plot_graph=plot_graphs)
+    #best_m = cross_validation_experiment(plot_graph=plot_graphs)
+    best_m = 50
     print(f'best_m = {best_m}')
 
     """
