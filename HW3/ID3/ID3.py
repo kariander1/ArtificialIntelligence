@@ -34,9 +34,8 @@ class ID3:
         impurity = 0.0
 
         # ====== YOUR CODE: ======
-        P_lable = counts/labels.shape[0]
-
-        impurity = -np.sum(P_lable*np.log2(P_lable))
+        P_table = counts / labels.shape[0]
+        impurity = -np.sum(P_table * np.log2(P_table))
         # ========================
 
         return impurity
@@ -60,10 +59,10 @@ class ID3:
 
         info_gain_value = 0.0
         # ====== YOUR CODE: ======
-        N = len(left)+len(right)
-        child_leftentropy = self.entropy(left, left_labels)
-        child_rightentropy = self.entropy(right, right_labels)
-        child_ent = len(left)/N*child_leftentropy+len(right)/N*child_rightentropy
+        N = len(left) + len(right)
+        child_left_entropy = self.entropy(left, left_labels)
+        child_right_entropy = self.entropy(right, right_labels)
+        child_ent = len(left) / N * child_left_entropy + len(right) / N * child_right_entropy
         info_gain_value = current_uncertainty - child_ent
         # ========================
 
@@ -95,7 +94,6 @@ class ID3:
         false_labels = labels[is_matched == False]
         gain = self.info_gain(true_rows, true_labels, false_rows, false_labels, current_uncertainty)
 
-
         # ========================
 
         return gain, true_rows, true_labels, false_rows, false_labels
@@ -121,13 +119,14 @@ class ID3:
             feature_vals = unique_vals(rows, column_idx)
             for feature_val in feature_vals:
                 question = Question(rows, column_idx, feature_val)
-                gain, true_rows, true_labels, false_rows, false_labels = self.partition(rows, labels, question, current_uncertainty)
+                gain, true_rows, true_labels, false_rows, false_labels = self.partition(rows, labels, question,
+                                                                                        current_uncertainty)
                 if gain > best_gain:
-                    best_gain = gain # keep track of the best information gain
+                    best_gain = gain  # keep track of the best information gain
                     best_question = question  # keep train of the feature / value that produced it
                     best_false_rows, best_false_labels = false_rows, false_labels
                     best_true_rows, best_true_labels = true_rows, true_labels
-      # ========================
+        # ========================
 
         return best_gain, best_question, best_true_rows, best_true_labels, best_false_rows, best_false_labels
 
@@ -148,11 +147,15 @@ class ID3:
         true_branch, false_branch = None, None
 
         # ====== YOUR CODE: ======
-
-        best_gain, best_question, best_true_rows, best_true_labels, best_false_rows, best_false_labels = self.find_best_split(rows, labels)
-        if best_gain is 0:
+        if len(labels) < self.min_for_pruning:
             return Leaf(rows, labels)
-        true_branch = self.build_tree(best_true_rows,best_true_labels)
+
+        best_gain, best_question, best_true_rows, best_true_labels, best_false_rows, best_false_labels = self.find_best_split(
+            rows, labels)
+
+        if best_gain == 0:
+            return Leaf(rows, labels)
+        true_branch = self.build_tree(best_true_rows, best_true_labels)
         false_branch = self.build_tree(best_false_rows, best_false_labels)
 
         # ========================
@@ -189,12 +192,8 @@ class ID3:
         if isinstance(node, Leaf):
             prediction = node.predictions
         else:
-            is_matched = node.question.match(row)
-            if is_matched:
-                prediction = self.predict_sample(node.true_branch)
-            else:
-                prediction = self.predict_sample(node.false_branch)
-
+            branch = node.true_branch if node.question.match(row) else node.false_branch
+            prediction = self.predict_sample(branch)
 
         # ========================
 
