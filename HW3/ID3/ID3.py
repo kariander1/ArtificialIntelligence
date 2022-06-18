@@ -34,7 +34,7 @@ class ID3:
         impurity = 0.0
 
         # ====== YOUR CODE: ======
-        P_table = counts / labels.shape[0]
+        P_table = np.array(list(counts.values()))/labels.shape[0]
         impurity = -np.sum(P_table * np.log2(P_table))
         # ========================
 
@@ -190,10 +190,10 @@ class ID3:
 
         # ====== YOUR CODE: ======
         if isinstance(node, Leaf):
-            prediction = node.predictions
+            prediction =  max(node.predictions, key=node.predictions.get)
         else:
             branch = node.true_branch if node.question.match(row) else node.false_branch
-            prediction = self.predict_sample(branch)
+            prediction = self.predict_sample(row, branch)
 
         # ========================
 

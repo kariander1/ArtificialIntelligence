@@ -62,7 +62,13 @@ def basic_experiment(x_train, y_train, x_test, y_test, formatted_print=False):
     acc = None
 
     # ====== YOUR CODE: ======
-    raise NotImplementedError
+    tree = ID3(np.unique(y_train))
+    tree.fit(x_train, y_train)
+    pred = tree.predict(x_test)
+    acc = accuracy(y_test, pred)
+
+
+
     # ========================
 
     assert acc > 0.9, 'you should get an accuracy of at least 90% for the full ID3 decision tree'
