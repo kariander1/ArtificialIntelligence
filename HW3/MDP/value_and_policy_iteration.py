@@ -20,20 +20,24 @@ def _calc_prob_sum(mdp, U, action_wanted, S):
     return prob_sum
 
 
-def _evaluate_state_iteration(mdp, U, S):
+def _evaluate_state_iteration(mdp, U, S,eps = 0.0):
     reward = is_float(mdp.board[S[0]][S[1]])  # Reward for each cell R(s)
     if reward is None:
         return None, None, None
+    prob_sums = {}
     max_actions = []
     max_sum = 0
     if S not in mdp.terminal_states:
         for action_wanted in mdp.actions.keys():
-            prob_sum = _calc_prob_sum(mdp, U, action_wanted, S)
-            if prob_sum > max_sum:
-                max_sum = prob_sum
-                max_actions = [action_wanted]
-            elif prob_sum == max_sum:
-                max_actions += [action_wanted]
+            prob_sums[action_wanted] = _calc_prob_sum(mdp, U, action_wanted, S)
+            # if prob_sum > max_sum:
+            #     max_sum = prob_sum
+            #     max_actions = [action_wanted]
+            # elif prob_sum == max_sum:
+            #     max_actions += [action_wanted]
+        max_sum = max(prob_sums.values())
+        max_actions = [a for a in mdp.actions.keys() if prob_sums[a]>=max_sum-eps]
+    # Handle cases of terminal states, assign default first actions (won't be used)
     if len(max_actions) == 0:
         max_actions = [actions_mapping[0]]
     return max_sum, max_actions, reward

@@ -88,10 +88,10 @@ class ID3:
         # ====== YOUR CODE: ======
 
         is_matched = np.apply_along_axis(question.match, 1, rows)
-        true_rows = rows[is_matched == True]
-        false_rows = rows[is_matched == False]
-        true_labels = labels[is_matched == True]
-        false_labels = labels[is_matched == False]
+        true_rows = rows[is_matched]
+        false_rows = rows[~is_matched]
+        true_labels = labels[is_matched]
+        false_labels = labels[~is_matched]
         gain = self.info_gain(true_rows, true_labels, false_rows, false_labels, current_uncertainty)
 
         # ========================

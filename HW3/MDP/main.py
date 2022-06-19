@@ -4,6 +4,7 @@ from mdp import MDP
 from value_and_policy_iteration import value_iteration, get_policy, policy_evaluation, policy_iteration
 #from value_and_policy_iteration_nior import value_iteration, get_policy, policy_evaluation, policy_iteration
 
+
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
         parser.error("The file %s does not exist!" % arg)
@@ -48,7 +49,7 @@ def example_driver():
             prob = prob.split(',')
             transition_function_env[action] = tuple(map(float, prob))
 
-    # initialising the env
+    # initializing the env
     mdp = MDP(board=board_env,
               terminal_states=terminal_states_env,
               transition_function=transition_function_env,
@@ -75,10 +76,12 @@ def example_driver():
     print("\nFinal policy:")
     policy = get_policy(mdp, U_new)
     mdp.print_policy(policy)
-    from bonus import get_all_policies,print_policies
-    n_policies = get_all_policies(mdp,U_new)
-    print("Num of policies:",n_policies)
 
+    from bonus import get_all_policies, print_policies
+    n_policies,policies,_ = get_all_policies(mdp,U_new)
+    print_policies(mdp, policies)
+    print("Num of policies: ")
+    print(n_policies)
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
     print("@@@@@@@@@ Policy iteration @@@@@@@@")
