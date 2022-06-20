@@ -144,7 +144,6 @@ def get_policy_for_different_rewards(mdp,r_res = 0.005):  # You can add more inp
 
     for r in np.arange(min_r, max_r + r_res, r_res):
         reward = round(r.item(), 5)
-        print(reward)
         current_mdp = deepcopy(mdp)
         current_mdp_np = np.copy(np_mdp)
         current_mdp_np[cell_mask] = str(reward)

@@ -1,6 +1,5 @@
 from ID3 import ID3
 from utils import *
-
 """
 Make the imports of python packages needed
 """
@@ -39,7 +38,16 @@ def find_best_pruning_m(train_dataset: np.array, m_choices, num_folds=5):
         #  or implement something else.
 
         # ====== YOUR CODE: ======
-        raise NotImplementedError
+        m_accuracies = []
+        kf = KFold(n_splits=num_folds, random_state=205917883, shuffle=True)
+        for train_indices, test_indices in kf.split(train_dataset):
+            data_split = get_dataset_split(train_dataset.iloc[train_indices], train_dataset.iloc[test_indices],
+                                           target_attribute)
+            [x_train, y_train, x_test, y_test] = data_split
+            model.fit(x_train, y_train)
+            pred = model.predict(x_test)
+            m_accuracies.append(accuracy(y_test, pred))
+        accuracies.append(m_accuracies)
         # ========================
 
     best_m_idx = np.argmax([np.mean(acc) for acc in accuracies])
@@ -91,13 +99,14 @@ def cross_validation_experiment(plot_graph=True):
 
     best_m = None
     accuracies = []
-    m_choices = []
+    m_choices = [14, 16, 20, 50, 100, 200]
     num_folds = 5
 
     # ====== YOUR CODE: ======
     assert len(m_choices) >= 5, 'fill the m_choices list with  at least 5 different values for M.'
-    raise NotImplementedError
-
+    kf = KFold(n_splits=num_folds,random_state=205917883, shuffle=True)
+    attributes_names, train_dataset, test_dataset = load_data_set('ID3')
+    best_m, accuracies = find_best_pruning_m(train_dataset,m_choices,num_folds)
     # ========================
     accuracies_mean = np.array([np.mean(acc) * 100 for acc in accuracies])
     if plot_graph:
@@ -160,8 +169,8 @@ if __name__ == '__main__':
            modify the value from False to True to plot the experiment result
     """
     plot_graphs = True
-    #best_m = cross_validation_experiment(plot_graph=plot_graphs)
-    best_m = 50
+    best_m = cross_validation_experiment(plot_graph=plot_graphs)
+
     print(f'best_m = {best_m}')
 
     """
