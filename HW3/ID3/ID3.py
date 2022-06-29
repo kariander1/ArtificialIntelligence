@@ -121,7 +121,7 @@ class ID3:
                 question = Question(rows, column_idx, feature_val)
                 gain, true_rows, true_labels, false_rows, false_labels = self.partition(rows, labels, question,
                                                                                         current_uncertainty)
-                if gain > best_gain:
+                if gain >= best_gain:
                     best_gain = gain  # keep track of the best information gain
                     best_question = question  # keep train of the feature / value that produced it
                     best_false_rows, best_false_labels = false_rows, false_labels

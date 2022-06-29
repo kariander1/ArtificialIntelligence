@@ -2,7 +2,6 @@ import argparse
 import os
 from mdp import MDP
 from value_and_policy_iteration import value_iteration, get_policy, policy_evaluation, policy_iteration
-#from value_and_policy_iteration_nior import value_iteration, get_policy, policy_evaluation, policy_iteration
 
 
 def is_valid_file(parser, arg):
